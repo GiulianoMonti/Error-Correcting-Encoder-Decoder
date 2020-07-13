@@ -1,34 +1,56 @@
 package correcter;
 
+import java.io.InputStream;
+import java.io.FileInputStream;
 import java.util.Random;
-import java.util.Scanner;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String text = scanner.nextLine();
+    public static void main(String... args) {
 
-        StringBuilder textWithErrors = new StringBuilder();
+        Correcter msg = new Correcter();
+        String fileNameIn = "send.txt";
+        String fileNameOut = "received.txt";
 
-        String characters = " ABCDEFGHIJKLMNOQPRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        msg.setBytes(fileNameIn);
+        msg.corruptBytes();
+        msg.writeBytes(fileNameOut);
 
-        System.out.println(text);
-        for (int i = 0; i < text.length();i++){
-            textWithErrors.append(text.charAt(i));
-            textWithErrors.append(text.charAt(i));
-            textWithErrors.append(text.charAt(i));
+    }
+}
+
+class Correcter {
+
+    private static byte[] bytes;
+
+    void setBytes(String in) {
+        try (InputStream inputStream = new FileInputStream(in)) {
+            bytes = inputStream.readAllBytes();
+        } catch (FileNotFoundException fnf) {
+            System.out.println("File not found!");
+        } catch (IOException ioe) {
+            System.out.println(ioe.getCause());
         }
-        System.out.println(textWithErrors);
+    }
 
-        Random random = new Random();
-        int index;
-        for (int i = 1; i < textWithErrors.length() + 1; i++) {
-            if (i % 3 == 0) {
-                index = random.nextInt(characters.length());
-                textWithErrors.replace(i - 1, i, String.valueOf(characters.charAt(index)));
-            }
+    void corruptBytes() {
+        Random generate = new Random();
+
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] ^= 1 << generate.nextInt(8);
         }
-        System.out.println(textWithErrors);
-        System.out.println(text);
+    }
+
+    void writeBytes(String out) {
+        try (OutputStream outputStream = new FileOutputStream(out, false)) {
+            outputStream.write(bytes);
+        } catch (FileNotFoundException fnf) {
+            System.out.println("File not found!");
+        } catch (IOException ioe) {
+            System.out.println(ioe.getCause());
+        }
     }
 }
